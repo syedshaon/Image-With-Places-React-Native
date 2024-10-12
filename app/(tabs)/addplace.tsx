@@ -81,8 +81,8 @@ const AddPlace = () => {
       //   ["id", "title", "imageURL", "address", 123, 124]
       // );
       // console.log("Insert Value ", result);
-      const result = await db.getAllAsync("SELECT * FROM places");
-      console.log("Fetch Values ", result);
+      // const result = await db.getAllAsync("SELECT * FROM places");
+      // console.log("Fetch Values ", result);
     };
     asyncF();
   }, []);
