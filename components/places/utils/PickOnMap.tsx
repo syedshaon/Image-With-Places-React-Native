@@ -2,7 +2,7 @@ import React from "react";
 import MapView, { Marker, MapPressEvent } from "react-native-maps";
 import { StyleSheet, View, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import CoolButton from "./CoolButton";
+import CoolButton from "../../CoolButton";
 
 type PickOnMapProps = {
   setShowMapModal: (show: boolean) => void;
@@ -25,20 +25,25 @@ export default function PickOnMap({ mapCenter, setShowMapModal, imgLocation, set
     setShowMapModal(false); // Close modal when location is confirmed
   };
 
+  const closeModal = () => {
+    if (!imgLocation) {
+      Alert.alert(
+        "Are you sure?", // Title
+        "Are you sure you want to close without picking a location?", // Message
+        [
+          { text: "No", style: "cancel" }, // Cancel option
+          { text: "Yes", onPress: () => setShowMapModal(false) }, // Confirm option
+        ],
+        { cancelable: true }
+      );
+    } else {
+      setShowMapModal(false);
+    }
+  };
+
   return (
     <View style={Styles.rootContainer}>
-      <Ionicons
-        name="close"
-        size={24}
-        color="#fff"
-        style={Styles.closeIcon}
-        onPress={() => {
-          if (!imgLocation) {
-            Alert.alert("No location selected", "Are you sure you want to close without picking a location?");
-          }
-          setShowMapModal(false);
-        }}
-      />
+      <Ionicons name="close" size={24} color="#fff" style={Styles.closeIcon} onPress={closeModal} />
       <MapView
         region={mapCenter} // Use 'region' to dynamically update the map's center
         style={Styles.map}
@@ -75,5 +80,8 @@ const Styles = StyleSheet.create({
     backgroundColor: "rgba(233, 22, 22, 0.88)",
     textAlign: "center",
     textAlignVertical: "center",
+  },
+  cancel: {
+    color: "red",
   },
 });

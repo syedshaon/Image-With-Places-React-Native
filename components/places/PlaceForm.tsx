@@ -1,15 +1,12 @@
-import { Place } from "@/model/place";
-
-import React, { useState, useEffect } from "react";
-import { View, TextInput, Button, Text, Image, StyleSheet, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, TextInput, Image, StyleSheet, Alert } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import * as LocationPicker from "expo-location";
 
 import CoolButton from "@/components/CoolButton";
-import OutlinedButton from "@/components/OutlinedButton";
-import MapPreview from "@/components/MapPreview";
-import Modal from "react-native-modal";
-import PickOnMap from "@/components/PickOnMap";
+
+import MapContainer from "./utils/MapContainer";
+import uuid from "react-native-uuid";
+import { Place } from "@/model/place";
 
 export interface Location {
   latitude: number;
@@ -21,51 +18,6 @@ const AddPlaceForm = () => {
   const [image, setImage] = useState<string | null>(null);
   const [address, setAddress] = useState("");
   const [location, setLocation] = useState<Location | null>(null);
-  const [showMapModal, setShowMapModal] = useState(false);
-
-  const [mapCenter, setMapCenter] = useState({
-    latitude: 37.78825,
-    longitude: -122.4324,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-
-  useEffect(() => {
-    const getCenterOfMap = async () => {
-      if (location?.latitude && location?.longitude) {
-        // setCenterOfMap({
-        //   lat: imgLocation.latitude,
-        //   lng: imgLocation.longitude,
-        // });
-        setMapCenter({
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
-        return;
-      } else {
-        const { status } = await LocationPicker.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          Alert.alert("Permission denied", "You need to grant location permissions to use this app.");
-          return;
-        }
-
-        const location = await LocationPicker.getCurrentPositionAsync();
-        // setCenterOfMap({
-        //   lat: location.coords.latitude,
-        //   lng: location.coords.longitude,
-        // });
-        setMapCenter({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        });
-      }
-    };
-    getCenterOfMap();
-  }, []);
 
   // Function to handle Image Picker
   const pickImageHandler = async () => {
@@ -85,25 +37,6 @@ const AddPlaceForm = () => {
     }
   };
 
-  // Function to locate the user
-  const locateLocationHandler = async () => {
-    const { status } = await LocationPicker.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Permission denied", "You need to grant location permissions to use this app.");
-      return;
-    }
-
-    const location = await LocationPicker.getCurrentPositionAsync();
-    setLocation({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
-    });
-  };
-
-  const PickLocationHandler = async () => {
-    setShowMapModal(true);
-  };
-
   // Submit handler for the form
   const submitHandler = () => {
     if (!title || !image || !address || !location) {
@@ -111,13 +44,7 @@ const AddPlaceForm = () => {
       return;
     }
 
-    const newPlace = {
-      id: new Date().toString(), // Placeholder for now
-      title,
-      imageURL: image,
-      address,
-      location,
-    };
+    const newPlace = new Place(uuid.v4().toString(), title, image, address, location);
 
     // You can send `newPlace` to your backend or state management system here
     console.log(newPlace);
@@ -140,24 +67,8 @@ const AddPlaceForm = () => {
         {image && <Image source={{ uri: image }} style={styles.image} />}
       </View>
 
-      {/* Address Input */}
-      <TextInput style={styles.input} placeholder="Address" value={address} onChangeText={setAddress} />
-
       {/* Location Picker */}
-      <Modal isVisible={showMapModal}>
-        <View style={{ flex: 1, height: "100%" }}>
-          <PickOnMap mapCenter={mapCenter} imgLocation={location ? { latitude: location.latitude, longitude: location.longitude } : null} setImgLocation={(loc) => setLocation(loc ? { latitude: loc.latitude, longitude: loc.longitude } : null)} setShowMapModal={setShowMapModal} />
-        </View>
-      </Modal>
-      <View style={styles.locationPicker}>
-        {location?.longitude && <MapPreview location={location} />}
-        <View style={styles.locationPickerButtons}>
-          <OutlinedButton iconName="location" title="Locate User" onPress={locateLocationHandler} />
-
-          <OutlinedButton iconName="map" title="Pick on Map" onPress={PickLocationHandler} />
-        </View>
-      </View>
-
+      <MapContainer address={address} setAddress={setAddress} location={location} setLocation={setLocation} />
       {/* Submit Button */}
       <CoolButton variation="secondary" title="Add Place" onPress={submitHandler} />
     </View>
