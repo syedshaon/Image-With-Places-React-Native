@@ -4,7 +4,7 @@ import { View, StyleSheet, Alert, Text } from "react-native";
 import * as LocationPicker from "expo-location";
 
 import OutlinedButton from "@/components/OutlinedButton";
-import MapPreview from "@/components/places/utils/MapPreview";
+import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal";
 import PickOnMap from "@/components/places/utils/PickOnMap";
 const ApiKey = "AIzaSyA8oZf32HLpksUM_wEIGhmFmWCLgEa7ohw";
@@ -117,7 +117,12 @@ const MapContainer = ({ location, setLocation, address, setAddress }: MapContain
         </View>
       </Modal>
       <View style={styles.locationPicker}>
-        {location?.longitude && <MapPreview location={location} />}
+        {location?.longitude ? (<MapView style={styles.map} initialRegion={{latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 1,
+        longitudeDelta: 1,}}>
+          <Marker   coordinate={mapCenter} title="Image Location"   />
+        </MapView>) : <View><Text>No map</Text></View> }
         {address && (
           <View style={styles.addressDetails}>
             <Text>{address}</Text>
@@ -153,5 +158,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     alignItems: "center",
     width: "100%",
+  },
+   map: {
+     
+    width: "100%",
+    height: 200,
+    borderWidth: 1,
+    borderColor: "black",
+
   },
 });

@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import LoadingOverlay from "@/components/LoadingOverlay";
-import * as SQLite from "expo-sqlite";
-import MapPreview from "@/components/places/utils/MapPreview";
+import * as SQLite from "expo-sqlite"; 
+import MapView, { Marker } from "react-native-maps";
 
 type ParamList = {
   Detail: { id: string }; // Specify the expected params
@@ -50,7 +50,10 @@ const index = () => {
           <Image source={{ uri: place[0].imageURL }} style={Styles.img} />
 
           <Text style={Styles.imgTitle}>Location of the Image</Text>
-          <MapPreview location={{ latitude: place[0].latitude, longitude: place[0].longitude }} />
+          <MapView style={Styles.map} initialRegion={{ latitude: place[0].latitude, longitude: place[0].longitude, latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421, }} >
+            <Marker   coordinate={{latitude: place[0].latitude, longitude: place[0].longitude,  }} title="Image Location"   />
+          </MapView>
           <Text style={Styles.imgAddress}>{place[0].address}</Text>
         </View>
       )}
@@ -90,5 +93,12 @@ const Styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     marginTop: 20,
+  },
+  map: {
+    width: 400,
+    maxWidth: "100%",
+    height: 200,
+    borderRadius: 10,
+    marginVertical: 20,
   },
 });

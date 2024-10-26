@@ -5,24 +5,52 @@ import LoadingOverlay from "@/components/LoadingOverlay";
 import { Link } from "expo-router";
 
 const AllPlaces = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [places, setPlaces] = useState<any[]>([]);
+
+   useEffect(() => {
+    const asyncF = async () => {
+      const db = await SQLite.openDatabaseAsync("placesDB");
+      const result = await db.execAsync(`
+          CREATE TABLE IF NOT EXISTS places (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, imageURL TEXT NOT NULL, address TEXT NOT NULL, latitude REAL NOT NULL, longitude REAL NOT NULL);
+        `);
+      // console.log("Result ", result);
+      // const result2 = await db.runAsync(
+      //   `
+      // INSERT INTO places (id, title, imageURL, address, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)
+      // `,
+      //   ["id", "title", "imageURL", "address", 123, 124]
+      // );
+      // console.log("Insert Value ", result2);
+    const result3 = await db.getAllAsync("SELECT * FROM places");
+      // console.log("Fetch Values ", result3);
+    };
+    asyncF();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
-      const db = await SQLite.openDatabaseAsync("placesDB");
+       setLoading(true);
+       try {
+         const db = await SQLite.openDatabaseAsync("placesDB");
       const result = await db.getAllAsync("SELECT * FROM places");
+      // console.log(result);
       setPlaces(result);
+       } catch (error) {
+         console.log(error);
+        
+       }
+     
       setLoading(false);
     };
 
-    fetchData();
+     fetchData();
   }, []);
   return (
     <View style={Styles.rootContainer}>
       {loading && <LoadingOverlay message="Loading Places..." />}
 
-      {!loading && places.length && (
+      {!loading && (
         <FlatList
           data={places}
           keyExtractor={(item) => item.id.toString()}
@@ -36,6 +64,10 @@ const AllPlaces = () => {
               </View>
             </Link>
           )}
+          ListEmptyComponent={() => (
+            <View style={Styles.rootContainer}><Text style={{ textAlign: "center" }}>No places found</Text></View>
+          )
+          }
         />
       )}
     </View>

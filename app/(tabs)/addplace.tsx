@@ -29,7 +29,8 @@ const AddPlace = () => {
       Alert.alert("Permission denied", "You need to grant camera permissions to use this app.");
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
@@ -47,8 +48,12 @@ const AddPlace = () => {
       return;
     }
 
-    const newPlace = new Place(uuid.v4().toString(), title, image, address, location);
-    const db = await SQLite.openDatabaseAsync("placesDB");
+    // const newPlace = new Place(uuid.v4().toString(), title, image, address, location);
+    
+
+    try {
+
+      const db = await SQLite.openDatabaseAsync("placesDB");
 
     const result = await db.runAsync(
       `
@@ -57,6 +62,11 @@ const AddPlace = () => {
       [uuid.v4().toString(), title, image, address, location.latitude, location.longitude]
     );
     console.log("Insert Value ", result);
+      
+    } catch (error) {
+      console.log(error);
+      
+    }
 
     // You can send `newPlace` to your backend or state management system here
 
@@ -67,25 +77,7 @@ const AddPlace = () => {
     setLocation(null);
   };
 
-  useEffect(() => {
-    const asyncF = async () => {
-      const db = await SQLite.openDatabaseAsync("placesDB");
-      // const result = await db.execAsync(`
-      //     CREATE TABLE IF NOT EXISTS places (id TEXT PRIMARY KEY NOT NULL, title TEXT NOT NULL, imageURL TEXT NOT NULL, address TEXT NOT NULL, latitude REAL NOT NULL, longitude REAL NOT NULL);
-      //   `);
-      // console.log("Result ", result);
-      // const result = await db.runAsync(
-      //   `
-      // INSERT INTO places (id, title, imageURL, address, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?)
-      // `,
-      //   ["id", "title", "imageURL", "address", 123, 124]
-      // );
-      // console.log("Insert Value ", result);
-      const result = await db.getAllAsync("SELECT * FROM places");
-      console.log("Fetch Values ", result);
-    };
-    asyncF();
-  }, []);
+ 
 
   return (
     <ScrollView contentContainerStyle={Styles.rootContainer}>
